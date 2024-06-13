@@ -1,9 +1,3 @@
-
-// Affichage du compe à Rebours
-// et de l'état de la course Open Led Race
-// On récupère les données envoyées en série par OLR
-// pour piloter une matrice de 16x16 LEDs
-
 #include <FastLED.h>        //https://github.com/FastLED/FastLED
 #include <LEDMatrix.h>      //https://github.com/Jorgen-VikingGod/LEDMatrix
 
@@ -13,28 +7,27 @@
 #define CHIPSET             WS2812B   // Type de LEDs du bandeau
 
 // initial matrix layout (to get led strip index by x/y)
-#define MATRIX_WIDTH        16                                  // Taille X de la matrice
-#define MATRIX_HEIGHT       16                                  // Taille Y de la matrice
-#define MATRIX_TYPE         HORIZONTAL_ZIGZAG_MATRIX            // Organisation des LEDs
-#define MATRIX_SIZE         (MATRIX_WIDTH*MATRIX_HEIGHT)        // Nombre total de LEDs
-#define NUMPIXELS           MATRIX_SIZE                         // Nombre total de LEDs
+#define MATRIX_WIDTH        16
+#define MATRIX_HEIGHT       16
+#define MATRIX_TYPE         HORIZONTAL_ZIGZAG_MATRIX
+#define MATRIX_SIZE         (MATRIX_WIDTH*MATRIX_HEIGHT)
+#define NUMPIXELS           MATRIX_SIZE
 
-cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;      // Créer l'instance LEDMatrix
+cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
 
 #define pause 300
 
-// Open Led Race envoie les données de télémétrie sur le port série
-// Plus d'infos : https://gitlab.com/open-led-race/olr-arduino/-/blob/master/doc/OLR_Protocol_Serial.pdf
-// Variables pour stocker les données de la course
-int numeroVoiture = 0;
+
+// https://gitlab.com/open-led-race/olr-arduino/-/blob/master/doc/OLR_Protocol_Serial.pdf
+int carNumber = 0;
 int toursComplets = 0;
 int pourcentageTour = 0;
 
 
-void traiterDonnees(String data);
-void afficherCompteARebours() ;
-void afficherInformationsCourse(int numeroVoiture, int toursComplets, int pourcentageTour) ;
-void afficherGagnant(String data) ;
+void processRx(String data);
+void countDown() ;
+void dispRaceInfo(int numeroVoiture, int toursComplets, int pourcentageTour) ;
+void dispWinner(String data) ;
 
 
 void setup()
@@ -45,7 +38,15 @@ void setup()
   FastLED.setBrightness(200);
   FastLED.clear(true);  // on éteint toutes les LEDs
 
-  afficherCompteARebours();
+  countDown();
+  
+
+  dispRaceInfo(1, 3, 75);
+  dispRaceInfo(2, 3, 75);
+  dispRaceInfo(3, 2, 50);
+  dispRaceInfo(4, 4, 25);
+  delay(2000);
+  dispWinner("w1");
   /*
   leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::White));
   FastLED.show();
@@ -62,14 +63,14 @@ void loop() {
     Serial.print("\n");
     if (data.startsWith("T")) {
       // Analyse des données sur les voitures et les tours
-      traiterDonnees(data);
+      processRx(data);
     } else if (data.startsWith("R4")) {
       // Compte à rebours avant la course
-      afficherCompteARebours();
+      countDown();
       // Serial.print("C_A_R\n");
     } else if (data.startsWith("w")) {
       // Course terminée, affichage du gagnant
-      afficherGagnant(data);
+      dispWinner(data);
       // Serial.print("WIN\n");
       // afficherGagnant(data);
 
@@ -78,7 +79,7 @@ void loop() {
 
 }
 
-void traiterDonnees(String data) {
+void processRx(String data) {
   String donnees = "";
   donnees = data.substring(2);
 
@@ -114,11 +115,11 @@ void traiterDonnees(String data) {
    Serial.print("\n");
 
 
-  afficherInformationsCourse(numeroVoiture, toursComplets, pourcentageTour);
+  dispRaceInfo(numeroVoiture, toursComplets, pourcentageTour);
 
 }
 
-void afficherGagnant(String data) {
+void dispWinner(String data) {
   // Afficher le gagnant sur la matrice LED
   if (data.startsWith("w1")) {
     // Voiture 1 gagne (rouge)
@@ -141,8 +142,8 @@ void afficherGagnant(String data) {
 
 }
 
-void afficherCompteARebours() {
-  // Afficher 3
+void countDown() {
+  // 3
     leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Gray));
     leds.DrawFilledRectangle(5, 12, 11, 4, (CRGB::Orange));
     leds.DrawLine(6, 13, 10, 13, (CRGB::Black));
@@ -166,7 +167,7 @@ void afficherCompteARebours() {
     FastLED.show();
     delay(2000);
 
-  // Afficher 2
+  // 2
     leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Gray));
     leds.DrawFilledRectangle(5, 12, 11, 4, (CRGB::Orange));
     leds.DrawLine(6, 13, 10, 13, (CRGB::Black));
@@ -187,7 +188,7 @@ void afficherCompteARebours() {
     FastLED.show();
     delay(2000);
 
-  // Afficher 1
+  // 1
     leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Gray));
     leds.DrawFilledRectangle(7, 12, 11, 4, (CRGB::Orange));
     leds.DrawLine(8, 13, 10, 13, (CRGB::Black));
@@ -201,7 +202,7 @@ void afficherCompteARebours() {
     FastLED.show();
     delay(2000);
 
-  // Allumer GO! en vert
+  // Go !
     leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Yellow));
     leds.DrawFilledRectangle(1, 11, 2, 3, (CRGB::Black));
     leds.DrawLine(2, 12, 5, 12, (CRGB::Black));
@@ -220,15 +221,12 @@ void afficherCompteARebours() {
 
     leds.DrawLine(14, 12, 14, 4, (CRGB::Black));
     leds.DrawPixel(14, 2, (CRGB::Black));
-
-
     FastLED.show();
     delay(1000);
-    FastLED.clear(true);  // on éteint toutes les LEDs
-
+    FastLED.clear(true);
 }
 
-void afficherInformationsCourse(int numeroVoiture, int toursComplets, int pourcentageTour) {
+void dispRaceInfo(int carNumber, int lapsComplete, int lapProgress) {
   // Afficher les informations sur la matrice LED
   // Déterminer la couleur de la voiture en fonction du numéro
   // position y du rectangle représentant la voiture
@@ -239,32 +237,31 @@ void afficherInformationsCourse(int numeroVoiture, int toursComplets, int pource
 
   // Déterminer le nombre de LED à allumer en fonction du pourcentage du tour
   // on allume les 12 premières LED pour 100% du tour
-  int n = map(pourcentageTour, 0, 100, 0, 12);
+  int n = map(lapProgress, 0, 100, 0, 12);
   Serial.print("n vaut : ");
   Serial.print(n);
   Serial.print("\n");
 
-  // Traitement pour chaque voiture
-  switch (numeroVoiture) {
-    //  Voiture Rouge
+  switch (carNumber) {
+    //  Red Car
     case 1:
       color = CRGB::DarkRed;
       color2 = CRGB::Red;
       y = 12;
       break;
-    // Voiture Verte  
+    // Green Car
     case 2:
       color = CRGB::DarkGreen;
       color2 = CRGB::Green;
       y = 8;
       break;
-    // Voiture Bleue   
+    // Blue Car
     case 3:
       color = CRGB::DarkBlue;
       color2 = CRGB::Blue;
       y = 4;
       break;
-    // Voiture Blanche
+    // White Car
     case 4:
       color = CRGB::Grey;
       color2 = CRGB::White;
@@ -281,14 +278,14 @@ void afficherInformationsCourse(int numeroVoiture, int toursComplets, int pource
   
   // Si le pourcentage est à 0 et le nombre de tour à UN
   // on n'allume aucune LED pour cette voiture
-  if ((pourcentageTour == 0 ) && (toursComplets == 1)) {
+  if ((lapProgress == 0 ) && (lapsComplete == 1)) {
     // Eteindre le rectangle complet
     leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
     Serial.print("Aucune LED ======================= \n");
     FastLED.show();
   }
   // Si le nombre de tours est à UN on n'affiche que la position dans ce tour
-  if (toursComplets == 1 && (pourcentageTour != 0)) {
+  if (lapsComplete == 1 && (lapProgress != 0)) {
     // Eteindre le rectangle complet
     leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
     // Allumer les LED correspondant au % de tour effectué
@@ -298,13 +295,13 @@ void afficherInformationsCourse(int numeroVoiture, int toursComplets, int pource
   }
 
   // Si le nombre de tours est supérieur à 1
-  if (toursComplets >1) {
+  if (lapsComplete >1) {
     // Eteindre le rectangle complet de la voiture, y compris le nombre de tours
     leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
     // Allumer les LED correspondant au % de tour effectué
     leds.DrawFilledRectangle(0, y, n, y+3, color);
     // Allumer le nombre de LEDs correspondant au nombre de tours complets
-    leds.DrawFilledRectangle(12, y, 10 + toursComplets, y+3, color2);
+    leds.DrawFilledRectangle(12, y, 10 + lapsComplete, y+3, color2);
     Serial.print("Position + Nombre de tours ===== \n");
     FastLED.show();
   }
