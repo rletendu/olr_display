@@ -39,8 +39,6 @@ void setup()
   FastLED.clear(true);  // on éteint toutes les LEDs
 
   countDown();
-  
-
   dispRaceInfo(1, 3, 75);
   dispRaceInfo(2, 3, 75);
   dispRaceInfo(3, 2, 50);
@@ -62,84 +60,45 @@ void loop() {
     Serial.print(data);
     Serial.print("\n");
     if (data.startsWith("T")) {
-      // Analyse des données sur les voitures et les tours
       processRx(data);
     } else if (data.startsWith("R4")) {
-      // Compte à rebours avant la course
       countDown();
-      // Serial.print("C_A_R\n");
-    } else if (data.startsWith("w")) {
-      // Course terminée, affichage du gagnant
+    } else if (data.startsWith("w")) {    
       dispWinner(data);
-      // Serial.print("WIN\n");
-      // afficherGagnant(data);
-
-    }
+   }
   }
-
 }
 
 void processRx(String data) {
-  String donnees = "";
-  donnees = data.substring(2);
-
-  // Trouver l'index de 'p' dans la chaîne de caractères
-  int indexp = donnees.indexOf("p");
-
-  // Trouver l'index de 'M' dans la chaîne de caractères
-  int indexM = donnees.indexOf("M");
-
-  // Trouver l'index de la première virgule dans la chaîne de caractères
-  int indexVirgule1 = donnees.indexOf(",");
-
-  // Trouver l'index de la deuxième virgule dans la chaîne de caractères
-  int indexVirgule2 = donnees.indexOf(",", indexVirgule1 + 1);
-
-  // Extraire le numéro de voiture de la chaîne de caractères et le convertir en entier
-  int numeroVoiture = donnees.substring(indexp + 1, indexM).toInt();
-
-  // Extraire le nombre de tours complets de la chaîne de caractères et le convertir en entier
-  int toursComplets = donnees.substring(indexM + 1, indexVirgule1).toInt();
-
-  // Extraire le pourcentage du tour de la chaîne de caractères et le convertir en entier
-  int pourcentageTour = donnees.substring(indexVirgule1 + 1, indexVirgule2).toInt();
-
-   Serial.print("Voiture : ");
-   Serial.print(numeroVoiture);
-   Serial.print("\n");
-   Serial.print("Tours effectués : ");
-   Serial.print(toursComplets); 
-   Serial.print("\n");
-   Serial.print("Tour en cours : ");
-   Serial.print(pourcentageTour);
-   Serial.print("\n");
-
-
-  dispRaceInfo(numeroVoiture, toursComplets, pourcentageTour);
-
+  String frame = "";
+  frame = data.substring(2);
+  int indexp = frame.indexOf("p");
+  int indexM = frame.indexOf("M");
+  int indexVirgule1 = frame.indexOf(",");
+  int indexVirgule2 = frame.indexOf(",", indexVirgule1 + 1);
+  int carNumber = frame.substring(indexp + 1, indexM).toInt();
+  int lapsComplete = frame.substring(indexM + 1, indexVirgule1).toInt();
+  int lapProgress = frame.substring(indexVirgule1 + 1, indexVirgule2).toInt();
+  dispRaceInfo(carNumber, lapsComplete, lapProgress);
 }
 
 void dispWinner(String data) {
-  // Afficher le gagnant sur la matrice LED
+  
   if (data.startsWith("w1")) {
-    // Voiture 1 gagne (rouge)
+    // Car  1 : red
     leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Red));
   } else if (data.startsWith("w2")) {
-    // Voiture 2 gagne (vert)
+    // Car 2  : green
     leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Green));
   } else if (data.startsWith("w3")) {
-    // Voiture 3 gagne (bleu)
+    // Car 3 : blue
     leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Blue));
   } else if (data.startsWith("w4")) {
-    // Voiture 4 gagne (vert)
+    // Car 4 : White
     leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::White));
   }
   FastLED.show();
-  Serial.print(data);
-  Serial.print("Le gagnant est : \n");
-
   delay(pause);
-
 }
 
 void countDown() {
