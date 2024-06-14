@@ -66,9 +66,6 @@ void setup()
 void loop() {
   if (Serial.available()) {
     String data = Serial.readStringUntil('\n');
-    Serial.print("\n");
-    Serial.print(data);
-    Serial.print("\n");
     if (data.startsWith("p")) {
       int indexp = data.indexOf("p");
       int indexM = data.indexOf("M");
