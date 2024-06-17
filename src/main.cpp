@@ -66,7 +66,7 @@ void setup()
 void loop() {
   if (Serial.available()) {
     String data = Serial.readStringUntil('\n');
-    if (data.startsWith("p")) {
+    if (data.startsWith("p")) { //pxMy,zz,bb  x:car y:lap  zz:percent  bb:bat  
       int indexp = data.indexOf("p");
       int indexM = data.indexOf("M");
       int indexComma1 = data.indexOf(",");
@@ -75,7 +75,7 @@ void loop() {
       int lapsComplete = data.substring(indexM + 1, indexComma1).toInt();
       int lapProgress = data.substring(indexComma1 + 1, indexComma2).toInt();
       dispRaceInfo(carNumber, lapsComplete, lapProgress);
-    } else if (data.startsWith("R4")) {
+    } else if (data.startsWith("R4")) { //R4 : count down started, R5: count downn finish, R8: Race complete
       countDown();
     } else if (data.startsWith("w")) {    
       dispWinner(data);
