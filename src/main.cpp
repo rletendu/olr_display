@@ -29,12 +29,9 @@ cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
 #define CRGB_DARK_CAR4 (CRGB::Grey)
 
 
-
+uint8_t ranking[4]={1,2,3,4};
 
 // https://gitlab.com/open-led-race/olr-arduino/-/blob/master/doc/OLR_Protocol_Serial.pdf
-
-
-
 void countDown() ;
 void dispRaceInfo(int numeroVoiture, int toursComplets, int pourcentageTour) ;
 void dispWinner(String data) ;
@@ -46,20 +43,7 @@ void setup()
   FastLED.addLeds<CHIPSET, DATA_PIN, COLOR_ORDER>(leds[0], leds.Size()).setCorrection(TypicalSMD5050);
   FastLED.setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(200);
-  FastLED.clear(true);  // on éteint toutes les LEDs
-
-  countDown();
-  dispRaceInfo(1, 3, 75);
-  dispRaceInfo(2, 3, 75);
-  dispRaceInfo(3, 2, 50);
-  dispRaceInfo(4, 4, 25);
-  delay(2000);
-  dispWinner("w1");
-  /*
-  leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::White));
-  FastLED.show();
-*/
-
+  FastLED.clear(true);  
 }
 
 
@@ -232,3 +216,50 @@ void dispRaceInfo(int carNumber, int lapsComplete, int lapProgress) {
     FastLED.show();
   }
 }
+
+/*
+R8
+R4
+R5
+p1M1,0,100
+p2M1,0,100
+p1M1,3,100
+p2M1,3,100
+p1M1,41,100
+p2M1,33,100
+p1M1,84,100
+p2M1,58,100
+p1M2,14,100
+p2M1,84,100
+p1M2,31,100
+p2M2,13,100
+p1M2,49,100
+p2M2,37,100
+p1M2,75,100
+p2M2,64,100
+p1M3,3,100
+p2M3,10,100
+p1M3,29,100
+p2M3,51,100
+p1M3,55,100
+p2M3,88,100
+p1M3,77,100
+p2M4,21,100
+p1M3,97,100
+p2M4,60,100
+p1M4,37,100
+p2M4,98,100
+p1M4,64,100
+p2M5,33,100
+p1M4,84,100
+p2M5,64,100
+p1M5,12,100
+p2M5,90,100
+p3M5,90,100
+p4M2,75,100
+w2
+R8
+R4
+
+
+*/
