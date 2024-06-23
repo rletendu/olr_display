@@ -108,10 +108,16 @@ void setup()
 void loop() {
   if (Serial.available()) {
     String data = Serial.readStringUntil('\n');
-    if (data.startsWith("p")) {
+    if (data.startsWith("p")) { // p2M1,58,100
+/*
       int indexp = data.indexOf("p");
       int indexM = data.indexOf("M");
       int indexComma1 = data.indexOf(",");
+
+*/
+#define indexp 0
+#define indexM  2
+#define indexComma1 4
       int indexComma2 = data.indexOf(",", indexComma1 + 1);
       int carNumber = data.substring(indexp + 1, indexM).toInt();
       int lapsComplete = data.substring(indexM + 1, indexComma1).toInt();
@@ -261,12 +267,12 @@ void dispRaceInfo(int carNumber, int lapsComplete, int lapProgress) {
   if ((lapProgress == 0 ) && (lapsComplete == 1)) {
     leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
     FastLED.show();
-  }
+  } else
   if (lapsComplete == 1 && (lapProgress != 0)) {
     leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
     leds.DrawFilledRectangle(0, y, n, y+3, color);
     FastLED.show();
-  }
+  } else
   if (lapsComplete >1) {
     leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
     leds.DrawFilledRectangle(0, y, n, y+3, color);
