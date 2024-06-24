@@ -43,12 +43,12 @@ void setup()
   FastLED.setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(200);
   FastLED.clear(true);  
-  //countDown();
+  countDown();
   dispWinner("w1");
   dispWinner("w2");
   dispWinner("w3");
-  FastLED.clear(true);  
-  dispImage(logo);
+  dispWinner("w4");
+  dispImage(logo);delay(1000);
 }
 
 void loop() {
@@ -77,100 +77,39 @@ void loop() {
 }
 
 void dispWinner(String data) {
+  CRGB color;
+
   if (data.startsWith("w1")) {
-    leds.DrawFilledRectangle(0, 0, 15, 15, CRGB_CAR1);
+    color = CRGB_CAR1;
   } else if (data.startsWith("w2")) {
-    leds.DrawFilledRectangle(0, 0, 15, 15, CRGB_CAR2);
+    color = CRGB_CAR2;
   } else if (data.startsWith("w3")) {
-    leds.DrawFilledRectangle(0, 0, 15, 15, CRGB_CAR3);
+    color = CRGB_CAR3;
   } else if (data.startsWith("w4")) {
-    leds.DrawFilledRectangle(0, 0, 15, 15, CRGB_CAR4);
+    color = CRGB_CAR4;
   }
+
+  for (int y = 0; y < 5; y++) {
+    dispImage(arrival);
+    delay(500);
+    leds.DrawFilledRectangle(0, 0, 15, 15, color);
+    FastLED.show();
+    delay(500);
+  }
+  leds.DrawFilledRectangle(0, 0, 15, 15, color);
   FastLED.show();
 }
 
 void countDown() {
-  // 3
-    leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Gray));
-    leds.DrawFilledRectangle(5, 12, 11, 4, (CRGB::Orange));
-    leds.DrawLine(6, 13, 10, 13, (CRGB::Black));
-    leds.DrawPixel(5, 12, (CRGB::Black));
-    leds.DrawPixel(11, 12, (CRGB::Black));
-    leds.DrawLine(4, 11, 4, 8, (CRGB::Black));
-    leds.DrawLine(12, 11, 12, 3, (CRGB::Black));
-    leds.DrawLine(5, 7, 6, 7, (CRGB::Black));
-    leds.DrawLine(4, 6, 4, 3, (CRGB::Black));
-    leds.DrawPixel(5, 2, (CRGB::Black));
-    leds.DrawPixel(11, 2, (CRGB::Black));
-    leds.DrawLine(6, 1, 10, 1, (CRGB::Black));
-    leds.DrawFilledRectangle(5, 9, 6, 8, (CRGB::Maroon));
-    leds.DrawFilledRectangle(7, 10, 7, 9, (CRGB::Maroon));
-    leds.DrawPixel(8, 10, (CRGB::Maroon));
-    leds.DrawPixel(5, 4, (CRGB::Maroon));
-    leds.DrawLine(5, 3, 11, 3, (CRGB::Maroon));
-    leds.DrawLine(6, 2, 10, 2, (CRGB::Maroon));
-    leds.DrawLine(10, 8, 11, 8, (CRGB::Maroon));
-    leds.DrawLine(7, 6, 8, 6, (CRGB::Maroon));
-    FastLED.show();
-    delay(2000);
-
-  // 2
-    leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Gray));
-    leds.DrawFilledRectangle(5, 12, 11, 4, (CRGB::Orange));
-    leds.DrawLine(6, 13, 10, 13, (CRGB::Black));
-    leds.DrawPixel(5, 12, (CRGB::Black));
-    leds.DrawPixel(11, 12, (CRGB::Black));
-    leds.DrawLine(4, 11, 4, 8, (CRGB::Black));
-    leds.DrawLine(12, 11, 12, 2, (CRGB::Black));
-    leds.DrawPixel(5, 7, (CRGB::Black));
-    leds.DrawLine(4, 6, 4, 2, (CRGB::Black));
-    leds.DrawLine(5, 1, 11, 1, (CRGB::Black));
-    leds.DrawFilledRectangle(5, 9, 6, 8, (CRGB::Maroon));
-    leds.DrawFilledRectangle(7, 10, 7, 9, (CRGB::Maroon));
-    leds.DrawPixel(8, 10, (CRGB::Maroon));
-    leds.DrawLine(5, 3, 11, 3, (CRGB::Maroon));
-    leds.DrawFilledRectangle(5, 3, 11, 2, (CRGB::Maroon));
-    leds.DrawLine(10, 7, 11, 7, (CRGB::Maroon));
-    leds.DrawLine(9, 6, 11, 6, (CRGB::Maroon));
-    FastLED.show();
-    delay(2000);
-
-  // 1
-    leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Gray));
-    leds.DrawFilledRectangle(7, 12, 11, 4, (CRGB::Orange));
-    leds.DrawLine(8, 13, 10, 13, (CRGB::Black));
-    leds.DrawPixel(7, 12, (CRGB::Black));
-    leds.DrawLine(11, 12, 11, 2, (CRGB::Black));
-    leds.DrawLine(6, 11, 6, 8, (CRGB::Black));
-    leds.DrawLine(8, 1, 10, 1, (CRGB::Black));
-    leds.DrawLine(7, 7, 7, 2, (CRGB::Black));
-    leds.DrawFilledRectangle(8, 3, 10, 2, (CRGB::Maroon));
-    leds.DrawLine(7, 9, 7, 8, (CRGB::Maroon));
-    FastLED.show();
-    delay(2000);
-
-  // Go !
-    leds.DrawFilledRectangle(0, 0, 15, 15, (CRGB::Yellow));
-    leds.DrawFilledRectangle(1, 11, 2, 3, (CRGB::Black));
-    leds.DrawLine(2, 12, 5, 12, (CRGB::Black));
-    leds.DrawLine(5, 11, 6, 11, (CRGB::Black));
-    leds.DrawLine(2, 12, 5, 12, (CRGB::Black));
-    leds.DrawLine(5, 11, 6, 11, (CRGB::Black));
-    leds.DrawFilledRectangle(5, 6, 6, 3, (CRGB::Black));
-    leds.DrawLine(3, 2, 4, 2, (CRGB::Black));
-    leds.DrawPixel(6, 2, (CRGB::Black));
-    leds.DrawPixel(4, 6, (CRGB::Black));
-
-    leds.DrawFilledRectangle(8, 11, 9, 3, (CRGB::Black));
-    leds.DrawFilledRectangle(11, 11, 12, 3, (CRGB::Black));
-    leds.DrawLine(9, 12, 11, 12, (CRGB::Black));
-    leds.DrawLine(9, 2, 11, 2, (CRGB::Black));
-
-    leds.DrawLine(14, 12, 14, 4, (CRGB::Black));
-    leds.DrawPixel(14, 2, (CRGB::Black));
-    FastLED.show();
-    delay(1000);
-    FastLED.clear(true);
+  dispImage(three);
+  delay(2000);
+  dispImage(two);
+  delay(2000);
+  dispImage(one);
+  delay(2000);
+  dispImage(go);
+  delay(1000);
+  FastLED.clear(true);
 }
 
 void dispRaceInfo(int carNumber, int lapsComplete, int lapProgress) {
@@ -232,7 +171,7 @@ void dispImage(const uint8_t *img)
         v.raw[0] = pgm_read_byte_near(img+3*p);
         v.raw[1] = pgm_read_byte_near(img+3*p+1);
         v.raw[2] = pgm_read_byte_near(img+3*p+2);
-        leds.DrawPixel(x,y,v);
+        leds.DrawPixel(x,MATRIX_HEIGHT-y-1,v);
     }
   }
   FastLED.show();

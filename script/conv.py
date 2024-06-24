@@ -1,7 +1,7 @@
 from PIL import Image
 
 
-im = Image.open('mchp_ico.png')
+im = Image.open('arrival.png')
 pixels = list(im.getdata())
 #print(pixels)
 
