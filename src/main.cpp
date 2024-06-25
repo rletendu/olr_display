@@ -25,15 +25,21 @@ cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
 #define CRGB_DARK_CAR3 (CRGB::DarkBlue)
 #define CRGB_DARK_CAR4 (CRGB::Grey)
 
+#define NB_CARS 4
+
+typedef struct{
+    uint8_t lapProgress;
+    uint8_t lapsComplete;
+}car_position_t;
 
 uint8_t ranking[4]={1,2,3,4};
-
+car_position_t cars_position[NB_CARS];
 
 // https://gitlab.com/open-led-race/olr-arduino/-/blob/master/doc/OLR_Protocol_Serial.pdf
 void countDown() ;
-void dispRaceInfo(int numeroVoiture, int toursComplets, int pourcentageTour) ;
 void dispWinner(String data) ;
 void dispImage(const uint8_t *img);
+void dispRaceInfo();
 
 
 void setup()
@@ -43,7 +49,6 @@ void setup()
   FastLED.setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(200);
   FastLED.clear(true);  
-  countDown();
   dispWinner("w1");
   dispWinner("w2");
   dispWinner("w3");
@@ -65,9 +70,11 @@ void loop() {
       #define indexComma1 4
       int indexComma2 = data.indexOf(",", indexComma1 + 1);
       int carNumber = data.substring(indexp + 1, indexM).toInt();
-      int lapsComplete = data.substring(indexM + 1, indexComma1).toInt();
-      int lapProgress = data.substring(indexComma1 + 1, indexComma2).toInt();
-      dispRaceInfo(carNumber, lapsComplete, lapProgress);
+      cars_position[carNumber-1].lapsComplete = data.substring(indexM + 1, indexComma1).toInt();
+      cars_position[carNumber-1].lapProgress = data.substring(indexComma1 + 1, indexComma2).toInt();
+      if (carNumber==NB_CARS) { // Update Race information only when all player positions received (fastled update require critical blocking code section... )
+        dispRaceInfo();
+      }
     } else if (data.startsWith("R4")) {
       countDown();
     } else if (data.startsWith("w")) {    
@@ -112,70 +119,74 @@ void countDown() {
   FastLED.clear(true);
 }
 
-void dispRaceInfo(int carNumber, int lapsComplete, int lapProgress) {
-  CRGB color;      // Couleur du tour en cours
-  CRGB color2;     // Couleur du nombre de tours finis
-  int y=0;
-
-  int n = map(lapProgress, 0, 100, 0, 12);
-
-  switch (carNumber) {
-    case 1:
-      color = CRGB_DARK_CAR1;
-      color2 = CRGB_CAR1;
-      y = 12;
-      break;
-    case 2:
-      color = CRGB_DARK_CAR2;
-      color2 = CRGB_CAR2;
-      y = 8;
-      break;
-    case 3:
-      color = CRGB_DARK_CAR3;
-      color2 = CRGB_CAR3;
-      y = 4;
-      break;
-    case 4:
-      color = CRGB_DARK_CAR4;
-      color2 = CRGB_CAR4;
-      y = 0;
-      break;
-
-    default:
-      color = CRGB::Black;
-      break;
-  }  
-  if ((lapProgress == 0 ) && (lapsComplete == 1)) {
-    leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
-    FastLED.show();
-  } else
-  if (lapsComplete == 1 && (lapProgress != 0)) {
-    leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
-    leds.DrawFilledRectangle(0, y, n, y+3, color);
-    FastLED.show();
-  } else
-  if (lapsComplete >1) {
-    leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
-    leds.DrawFilledRectangle(0, y, n, y+3, color);
-    leds.DrawFilledRectangle(12, y, 10 + lapsComplete, y+3, color2);
-    FastLED.show();
-  }
-}
-
 void dispImage(const uint8_t *img)
 {
   for (int y = 0; y < MATRIX_HEIGHT; y++) {
     for (int x = 0; x < MATRIX_WIDTH; x++) {
         uint16_t p = y*MATRIX_HEIGHT+x;
         CRGB v;
-        v.raw[0] = pgm_read_byte_near(img+3*p);
-        v.raw[1] = pgm_read_byte_near(img+3*p+1);
-        v.raw[2] = pgm_read_byte_near(img+3*p+2);
+        v.raw[0] = pgm_read_byte_near(img+3*p);  //Red
+        v.raw[1] = pgm_read_byte_near(img+3*p+1);//Green
+        v.raw[2] = pgm_read_byte_near(img+3*p+2);//Blue
         leds.DrawPixel(x,MATRIX_HEIGHT-y-1,v);
     }
   }
   FastLED.show();
 }
+
+void dispRaceInfo() {
+  int lapsComplete;
+  int lapProgress;
+  for(int carNumber=1;carNumber<=NB_CARS;carNumber++) 
+  {
+    lapsComplete = cars_position[carNumber-1].lapsComplete;
+    lapProgress = cars_position[carNumber-1].lapProgress;
+    CRGB color_progress;   
+    CRGB color_complete;
+    int y=0;
+
+    int n = map(lapProgress, 0, 100, 0, 12);
+
+    switch (carNumber) {
+      case 1:
+        color_progress = CRGB_DARK_CAR1;
+        color_complete = CRGB_CAR1;
+        y = 12;
+        break;
+      case 2:
+        color_progress = CRGB_DARK_CAR2;
+        color_complete = CRGB_CAR2;
+        y = 8;
+        break;
+      case 3:
+        color_progress = CRGB_DARK_CAR3;
+        color_complete = CRGB_CAR3;
+        y = 4;
+        break;
+      case 4:
+        color_progress = CRGB_DARK_CAR4;
+        color_complete = CRGB_CAR4;
+        y = 0;
+        break;
+
+      default:
+        color_progress = CRGB::Black;
+        break;
+    }  
+    if ((lapProgress == 0 ) && (lapsComplete == 1)) {
+      leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
+    } else if (lapsComplete == 1 && (lapProgress != 0)) {
+      leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
+      leds.DrawFilledRectangle(0, y, n, y+3, color_progress);
+    } else if (lapsComplete >1) {
+      leds.DrawFilledRectangle(0, y, 15, y+3, (CRGB::Black));
+      leds.DrawFilledRectangle(0, y, n, y+3, color_progress);
+      leds.DrawFilledRectangle(12, y, 10 + lapsComplete, y+3, color_complete);
+    }
+  }
+  FastLED.show();
+}
+
 
 
 
