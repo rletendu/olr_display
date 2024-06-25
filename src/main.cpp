@@ -16,20 +16,22 @@
 cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
 
 #define CRGB_CAR1 (CRGB::Red)
-#define CRGB_CAR2 (CRGB::Green)
-#define CRGB_CAR3 (CRGB::Blue)
+#define CRGB_CAR2 (CRGB::Blue)
+#define CRGB_CAR3 (CRGB::Green)
 #define CRGB_CAR4 (CRGB::White)
 
 #define CRGB_DARK_CAR1 (CRGB::DarkRed)
-#define CRGB_DARK_CAR2 (CRGB::DarkGreen)
-#define CRGB_DARK_CAR3 (CRGB::DarkBlue)
+#define CRGB_DARK_CAR2 (CRGB::DarkBlue)
+#define CRGB_DARK_CAR3 (CRGB::DarkGreen)
 #define CRGB_DARK_CAR4 (CRGB::Grey)
 
 #define NB_CARS 4
 
 typedef struct{
+    uint8_t car;
     uint8_t lapProgress;
     uint8_t lapsComplete;
+    uint16_t overallProgress;
 }car_position_t;
 
 uint8_t ranking[4]={1,2,3,4};
@@ -47,13 +49,15 @@ void setup()
   Serial.begin(BAUD);
   FastLED.addLeds<CHIPSET, DATA_PIN, COLOR_ORDER>(leds[0], leds.Size()).setCorrection(TypicalSMD5050);
   FastLED.setCorrection(TypicalLEDStrip);
-  FastLED.setBrightness(200);
+  FastLED.setBrightness(255);
   FastLED.clear(true);  
-  dispWinner("w1");
-  dispWinner("w2");
-  dispWinner("w3");
-  dispWinner("w4");
-  dispImage(logo);delay(1000);
+  dispImage(logo);delay(100);
+}
+
+int compareByProgress(const void* a, const void* b) {
+    car_position_t *carA = (car_position_t*)a;
+    car_position_t *carB = (car_position_t*)b;
+    return (carB->overallProgress - carA->overallProgress);
 }
 
 void loop() {
@@ -72,12 +76,24 @@ void loop() {
       int carNumber = data.substring(indexp + 1, indexM).toInt();
       cars_position[carNumber-1].lapsComplete = data.substring(indexM + 1, indexComma1).toInt();
       cars_position[carNumber-1].lapProgress = data.substring(indexComma1 + 1, indexComma2).toInt();
+      cars_position[carNumber-1].car = carNumber;
+      cars_position[carNumber-1].overallProgress = 100*cars_position[carNumber-1].lapsComplete + cars_position[carNumber-1].lapProgress;
       if (carNumber==NB_CARS) { // Update Race information only when all player positions received (fastled update require critical blocking code section... )
+        for(uint8_t i=0;i<NB_CARS;i++) {
+          Serial.print(cars_position[i].car);
+        }
+        Serial.println();
+        qsort(cars_position, NB_CARS, sizeof(car_position_t), compareByProgress);
+        for(uint8_t i=0;i<NB_CARS;i++) {
+          Serial.print(cars_position[i].car);
+        }
+        Serial.println();
         dispRaceInfo();
       }
     } else if (data.startsWith("R4")) {
       countDown();
     } else if (data.startsWith("w")) {    
+      Serial.println(data);
       dispWinner(data);
    }
   }
@@ -137,36 +153,34 @@ void dispImage(const uint8_t *img)
 void dispRaceInfo() {
   int lapsComplete;
   int lapProgress;
-  for(int carNumber=1;carNumber<=NB_CARS;carNumber++) 
+  for(int i=0;i<NB_CARS;i++) 
   {
-    lapsComplete = cars_position[carNumber-1].lapsComplete;
-    lapProgress = cars_position[carNumber-1].lapProgress;
+    lapsComplete = cars_position[i].lapsComplete;
+    lapProgress = cars_position[i].lapProgress;
+    uint8_t carNumber = cars_position[i].car;
     CRGB color_progress;   
     CRGB color_complete;
     int y=0;
 
     int n = map(lapProgress, 0, 100, 0, 12);
-
+    y = 16-4*(i+1);
+    
     switch (carNumber) {
       case 1:
         color_progress = CRGB_DARK_CAR1;
         color_complete = CRGB_CAR1;
-        y = 12;
         break;
       case 2:
         color_progress = CRGB_DARK_CAR2;
         color_complete = CRGB_CAR2;
-        y = 8;
         break;
       case 3:
         color_progress = CRGB_DARK_CAR3;
         color_complete = CRGB_CAR3;
-        y = 4;
         break;
       case 4:
         color_progress = CRGB_DARK_CAR4;
         color_complete = CRGB_CAR4;
-        y = 0;
         break;
 
       default:
