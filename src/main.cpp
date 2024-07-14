@@ -1,3 +1,12 @@
+/*
+This is revised version from https://github.com/framboise314/Display-for-Open-LED-Race
+- This version does not need to modify openled race firmware, fixing timming issue while receiving car position
+- Added car ranking
+- Added image based display (based on python script handling png conversion )
+- (!) default cars color changed to match specific OLR impletation
+
+*/
+
 #include <FastLED.h>        //https://github.com/FastLED/FastLED
 #include <LEDMatrix.h>      //https://github.com/Jorgen-VikingGod/LEDMatrix
 #include "images.h"

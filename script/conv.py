@@ -3,7 +3,6 @@ from PIL import Image
 
 im = Image.open('arrival.png')
 pixels = list(im.getdata())
-#print(pixels)
 
 with open("out.h", 'w') as writer:
     i = 0
